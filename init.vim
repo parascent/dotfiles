@@ -157,7 +157,22 @@ inoremap <M-j> <Down>
 inoremap <M-k> <Up>
 inoremap <M-l> <Right>
 
+" save yank history to registers 1-9
+function! SaveLastReg()
+    if v:event['regname']==""
+        if v:event['operator']=='y'
+            for i in range(8,1,-1)
+                exe "let @".string(i+1)." = @". string(i)
+            endfor
+            if exists("g:last_yank")
+                let @1=g:last_yank
+            endif
+            let g:last_yank=@"
+        endif
+    endif
+endfunction
 
+:autocmd TextYankPost * call SaveLastReg()
 "jump between git hunks with git gutter
 " nnoremap <silent> <cr> :GitGutterNextHunk<cr>
 " nnoremap <silent> <backspace> :GitGutterPrevHunk<cr>
@@ -196,8 +211,10 @@ Plug 'ThePrimeagen/refactoring.nvim'
 " Plug 'dyng/ctrlsf.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+" Plug 'Shougo/neoyank.vim'
 " Plug 'justinhoward/fzf-neoyank'
 " Plug 'voldikss/vim-floaterm'
+Plug 'junegunn/vim-peekaboo'
 Plug 'tpope/vim-surround'
 " Plug 'preservim/nerdtree'
 Plug 'ms-jpq/chadtree'
@@ -213,7 +230,9 @@ Plug 'tpope/vim-commentary'
 " Plug 'sainnhe/gruvbox-material'
 " Plug 'rktjmp/lush.nvim'
 " Plug 'npxbr/gruvbox.nvim'
-Plug 'Murtaza-Udaipurwala/gruvqueen'
+" Plug 'Murtaza-Udaipurwala/gruvqueen'
+Plug 'rktjmp/lush.nvim'
+Plug 'ellisonleao/gruvbox.nvim'
 Plug 'ryanoasis/vim-devicons'
 " Plug 'pacha/vem-tabline'
 Plug 'machakann/vim-highlightedyank'
@@ -225,13 +244,13 @@ Plug 'airblade/vim-gitgutter'
 " Plug 'flazz/vim-colorschemes'
 "Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-repeat'
-Plug 'svermeulen/vim-easyclip'
-Plug 'Shougo/neoyank.vim'
+" Plug 'svermeulen/vim-easyclip'
 " Plug 'Shougo/denite.nvim', { 'do': ':UpdateRemotePlugins' }
 " Plug 'easymotion/vim-easymotion'
 " Plug 'justinmk/vim-sneak'
 " Plug 'rhysd/clever-f.vim'
 " Plug 'hushicai/tagbar-javascript.vim'
+" Plug 'maxbrunsfeld/vim-yankstack'
 Plug 'ggandor/lightspeed.nvim'
 Plug 'godlygeek/tabular'
 Plug 'preservim/tagbar'
@@ -461,7 +480,7 @@ nnoremap   <silent>   <F7>   :Ag<CR>
 vnoremap    <expr>   <F7>Get_visual_selection()<CR>
 tnoremap   <silent>   <F7>   :FloatermToggle<CR>
 "easyclip rempaps m to cut so here remapping gm to do m or mark
-nnoremap gm m
+" nnoremap gm m
 let g:vue_pre_processors = 'detect_on_enter'
 
 nnoremap <space>n :noh<CR>
@@ -497,7 +516,7 @@ let g:go_highlight_format_strings = 1
 let g:go_highlight_variable_declarations = 1
 let g:go_auto_sameids = 1
 
-let g:neoyank#save_registers = ['+','*']
+" let g:neoyank#save_registers = ['+','*']
 
 let g:wintabs_display='statusline'
 
@@ -511,8 +530,8 @@ let g:gruvqueen_italic_variables = v:true
 let g:gruvqueen_invert_selection = v:true
 let g:gruvqueen_style = 'original'
 set background=dark
-colorscheme gruvqueen
 
+colorscheme gruvbox
 
 if executable('rg')
     let g:rg_derive_root='true'
@@ -524,6 +543,7 @@ nnoremap L $
 nnoremap H ^
 vnoremap L $
 vnoremap H ^
+nnoremap Y y$
 
 " map to
 " nnoremap <silent> j gj
@@ -1037,5 +1057,20 @@ if exists('g:nvui')
   set guifont=Delugia:h9
   autocmd vimenter * hi Normal guibg=#212121 ctermbg=NONE
   autocmd vimenter * hi EndOfBuffer guibg=NONE ctermbg=NONE
+  :NvuiFrameless v:false
+  :NvuiCmdCenterYPos 0.5
+  :NvuiCmdFontSize 12
+  :NvuiCmdFontFamily Delugia
+  :NvuiCmdBigFontScaleFactor 1.2
+  :NvuiCmdPadding 10
 endif
 
+if exists('g:fvim_loaded')
+    " good old 'set guifont' compatibility with HiDPI hints...
+    set guifont=Delugia:h12
+    nnoremap <silent> <C-ScrollWheelUp> :set guifont=+<CR>
+    nnoremap <silent> <C-ScrollWheelDown> :set guifont=-<CR>
+    nnoremap <A-CR> :FVimToggleFullScreen<CR>
+    FVimCursorSmoothMove v:true
+    FVimCursorSmoothBlink v:true
+endif
