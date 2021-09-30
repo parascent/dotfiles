@@ -157,6 +157,16 @@ inoremap <M-j> <Down>
 inoremap <M-k> <Up>
 inoremap <M-l> <Right>
 
+"Specter KeyMaps
+nnoremap <leader>S :lua require('spectre').open()<CR>
+
+"search current word
+nnoremap <leader>sw :lua require('spectre').open_visual({select_word=true})<CR>
+vnoremap <leader>s :lua require('spectre').open_visual()<CR>
+"  search in current file
+nnoremap <leader>sp viw:lua require('spectre').open_file_search()<cr>
+
+
 " save yank history to registers 1-9
 function! SaveLastReg()
     if v:event['regname']==""
@@ -318,10 +328,13 @@ Plug 'kazhala/close-buffers.nvim'
 " Plug 'gelguy/wilder.nvim'
 "
 " Search and replace in multiple files
-" Plug 'windwp/nvim-spectre'
-Plug 'brooth/far.vim'
-
+Plug 'windwp/nvim-spectre'
 Plug 'vhyrro/neorg', { 'branch': 'unstable' } | Plug 'nvim-lua/plenary.nvim'
+
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 call plug#end()
 let g:indentLine_char_list = ['┊']
 "
@@ -682,32 +695,54 @@ end
 
 vim.o.completeopt = "menuone,noselect"
 
-require'compe'.setup {
-  enabled = true;
-  autocomplete = true;
-  debug = false;
-  min_length = 1;
-  preselect = 'enable';
-  throttle_time = 80;
-  source_timeout = 200;
-  incomplete_delay = 400;
-  max_abbr_width = 100;
-  max_kind_width = 100;
-  max_menu_width = 100;
-  documentation = false;
+local cmp = require'cmp'
 
-  source = {
-    path = true;
-    buffer = { priority = 1000 };
-    calc = true;
-    nvim_lsp = { priority = 950 };
-    nvim_lua = true;
-    spell = { priority = 500 };
-    tags = { priority = 800 };
-    --treesitter = true;
-    ultisnips = { priority = 700 };
-  };
-}
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      vim.fn["UltiSnips#Anon"](args.body)
+    end,
+  },
+  mapping = {
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+  },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'ultisnips' },
+    { name = 'buffer' },
+  }
+})
+
+--require'compe'.setup {
+--  enabled = true;
+--  autocomplete = true;
+--  debug = false;
+--  min_length = 1;
+--  preselect = 'enable';
+--  throttle_time = 80;
+--  source_timeout = 200;
+--  incomplete_delay = 400;
+--  max_abbr_width = 100;
+--  max_kind_width = 100;
+--  max_menu_width = 100;
+--  documentation = false;
+--
+--  source = {
+--    path = true;
+--    buffer = { priority = 1000 };
+--    calc = true;
+--    nvim_lsp = { priority = 950 };
+--    nvim_lua = true;
+--    spell = { priority = 500 };
+--    tags = { priority = 800 };
+--    --treesitter = true;
+--    ultisnips = { priority = 700 };
+--  };
+--}
 
 local t = function(str)
   return vim.api.nvim_replace_termcodes(str, true, true, true)
