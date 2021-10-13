@@ -2,6 +2,7 @@ syntax on
 " :set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50
 " 		  \,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor
 " 		  \,sm:block-blinkwait175-blinkoff150-blinkon175
+"
 set noshowmatch
 set mouse=a
 set relativenumber
@@ -46,6 +47,7 @@ set smartindent
 set autoindent
 set nu
 set nowrap
+set ignorecase
 set smartcase
 set noswapfile
 set nobackup
@@ -70,6 +72,7 @@ set updatetime=300
 set exrc
 set secure
 set number
+set spell spelllang=en_us
 
 " :nmap <leader>e :NERDTreeToggle<CR>
 " :nmap <leader>e :NvimTreeToggle<CR>
@@ -335,6 +338,15 @@ Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+Plug 'f3fora/cmp-spell'
+
+" Plugins for dbs
+" https://github.com/thibthib18/mongo-nvim
+Plug 'thibthib18/mongo-nvim'
+
+Plug 'dbmrq/vim-dialect'
+" markdown preview
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 call plug#end()
 let g:indentLine_char_list = ['┊']
 "
@@ -374,6 +386,16 @@ nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
 nnoremap <silent> <F1> <cmd>lua vim.lsp.buf.signature_help()  <CR>
 nnoremap <silent> <C-n> <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
 nnoremap <silent> <C-p> <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+
+nnoremap <silent> <leader>fu <cmd>Telescope lsp_references<cr>
+nnoremap <silent> <leader>gd <cmd>Telescope lsp_definitions<cr>
+nnoremap <silent> <leader>rn <cmd>lua vim.lsp.buf.rename()<cr>
+nnoremap <silent> <leader>xd <cmd>Telescope lsp_document_diagnostics<cr>
+nnoremap <silent> <leader>xD <cmd>Telescope lsp_workspace_diagnostics<cr>
+nnoremap <silent> <leader>xn <cmd>lua vim.lsp.diagnostic.goto_next()<cr>
+nnoremap <silent> <leader>xp <cmd>lua vim.lsp.diagnostic.goto_prev()<cr>
+nnoremap <silent> <leader>xx <cmd>Telescope lsp_code_actions<cr>
+nnoremap <silent> <leader>xX <cmd>%Telescope lsp_range_code_actions<cr>
 " autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
 " autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()
 
@@ -423,7 +445,7 @@ nmap <leader>dcbp <Plug>VimspectorToggleConditionalBreakpoint
 " <Plug>VimspectorPause
 " <Plug>VimspectorAddFunctionBreakpoint
 
-
+let g:peekaboo_window = "bel bo 32new"
 "highlightedyank
 let g:highlightedyank_highlight_duration = -1
 "confortable scroll
@@ -599,7 +621,13 @@ set completeopt=menuone,noinsert,noselect
 let g:completion_enable_snippet = 'UltiSnips'
 let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
 "#endregion completion
-
+"
+" List available databases
+nnoremap <leader>dbl <cmd>lua require('mongo-nvim.telescope.pickers').database_picker()<cr>
+" List collections in database (arg: database name)
+nnoremap <leader>dbcl <cmd>lua require('mongo-nvim.telescope.pickers').collection_picker('examples')<cr>
+" List documents in a database's collection (arg: database name, collection name)
+nnoremap <leader>dbdl <cmd>lua require('mongo-nvim.telescope.pickers').document_picker('examples', 'movies')<cr>
 
 " Avoid showing message extra message when using completion
 set shortmess+=c
@@ -612,6 +640,12 @@ nnoremap gp `[v`]
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
 lua << EOF
+require 'mongo-nvim'.setup {
+  -- connection string to your mongodb
+  connection_string = "mongodb://127.0.0.1:27017",
+  -- key to use for previewing/picking documents
+  list_document_key = "title"
+}
 require"telescope".load_extension("frecency")
 require('telescope').load_extension('ultisnips')
 require'telescope'.load_extension('project')
@@ -655,34 +689,63 @@ require('lualine').setup {
 require("bufferline").setup{}
 
 local on_attach = function(client, bufnr)
-  require'lsp_signature'.on_attach()
+  --require'lsp_signature'.on_attach()
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+  -- Enable completion triggered by <c-x><c-o>
+  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- Mappings.
+  local opts = { noremap=true, silent=true }
+
+  -- See `:help vim.lsp.*` for documentation on any of the below functions
+  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+  buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+  buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+  buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+  buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+  buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+  buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+  buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+  buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+
+  -- Set some keybinds conditional on server capabilities
+  if client.resolved_capabilities.document_formatting then
+      buf_set_keymap("n", "<leader>lf",
+                     "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+  elseif client.resolved_capabilities.document_range_formatting then
+      buf_set_keymap("n", "<leader>lf",
+                     "<cmd>lua vim.lsp.buf.range_formatting()<CR>", opts)
+  end
+
+  -- Set autocommands conditional on server_capabilities
+  if client.resolved_capabilities.document_highlight then
+      vim.api.nvim_exec([[
+      hi LspReferenceRead cterm=bold ctermbg=red guibg=LightYellow
+      hi LspReferenceText cterm=bold ctermbg=red guibg=LightYellow
+      hi LspReferenceWrite cterm=bold ctermbg=red guibg=LightYellow
+      augroup lsp_document_highlight
+      autocmd! * <buffer>
+      autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+      autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+      augroup END
+      ]], false)
+  end
 end
+
+local nvim_lsp = require('lspconfig')
 
 local pid = vim.fn.getpid()
 -- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
-local omnisharp_bin = "/opt/omnisharp-roslyn-bundled/run"
-require'lspconfig'.omnisharp.setup{
-  cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) },
-  on_attach = function(client)
-    require'lsp_signature'.on_attach()
-  end,
-}
-require'lspconfig'.dartls.setup{
-  cmd = { "dart", "/opt/dart-sdk/bin/snapshots/analysis_server.dart.snapshot", "--lsp" },
-}
-
-require'lspinstall'.setup() -- important
-
-local servers = require'lspinstall'.installed_servers()
-for _, server in pairs(servers) do
-  require'lspconfig'[server].setup{
-    on_attach = on_attach,
-  }
-end
-
- require'lspconfig'.typescript.setup{}
- require'lspconfig'.vue.setup{}
-
 --vim.g.completion_chain_complete_list = {
   --default = {
     --{ complete_items = { 'lsp' } },
@@ -714,35 +777,39 @@ cmp.setup({
     { name = 'nvim_lsp' },
     { name = 'ultisnips' },
     { name = 'buffer' },
+    { name = 'spell' },
   }
 })
 
---require'compe'.setup {
---  enabled = true;
---  autocomplete = true;
---  debug = false;
---  min_length = 1;
---  preselect = 'enable';
---  throttle_time = 80;
---  source_timeout = 200;
---  incomplete_delay = 400;
---  max_abbr_width = 100;
---  max_kind_width = 100;
---  max_menu_width = 100;
---  documentation = false;
+local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+
+-- local omnisharp_bin = "/usr/bin/omnisharp"
 --
---  source = {
---    path = true;
---    buffer = { priority = 1000 };
---    calc = true;
---    nvim_lsp = { priority = 950 };
---    nvim_lua = true;
---    spell = { priority = 500 };
---    tags = { priority = 800 };
---    --treesitter = true;
---    ultisnips = { priority = 700 };
---  };
---}
+ -- require'lspconfig'.omnisharp.setup{
+   -- capabilities = capabilities,
+   -- cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) },
+   -- -- root_dir = util.root_pattern("*.csproj", "*.sln"),
+   -- require'cmp'.setup{}
+ -- }
+
+require'lspconfig'.dartls.setup{
+  capabilities = capabilities,
+  cmd = { "dart", "/opt/dart-sdk/bin/snapshots/analysis_server.dart.snapshot", "--lsp" },
+}
+
+require'lspinstall'.setup() -- important
+
+local servers = require'lspinstall'.installed_servers()
+for _, server in pairs(servers) do
+  require'lspconfig'[server].setup{
+    capabilities = capabilities,
+    on_attach = on_attach,
+  }
+end
+
+ --require'lspconfig'.typescript.setup{}
+ --require'lspconfig'.vue.setup{}
+
 
 local t = function(str)
   return vim.api.nvim_replace_termcodes(str, true, true, true)
@@ -906,6 +973,12 @@ autocmd FileType pug setlocal commentstring=//-\ %s
 " Yank file name from buffer
 noremap ydp :let @+=expand("%:p")<CR>
 
+" List available databases
+nnoremap <leader>dbl <cmd>lua require('mongo-nvim.telescope.pickers').database_picker()<cr>
+" List collections in database (arg: database name)
+nnoremap <leader>dbcl <cmd>lua require('mongo-nvim.telescope.pickers').collection_picker('examples')<cr>
+" List documents in a database's collection (arg: database name, collection name)
+nnoremap <leader>dbdl <cmd>lua require('mongo-nvim.telescope.pickers').document_picker('examples', 'movies')<cr>
 " Tab and Shift-Tab in normal mode to navigate buffers
 :nmap <Tab> :BufMRUNext<CR>
 :nmap <S-Tab> :BufMRUPrev<CR>
