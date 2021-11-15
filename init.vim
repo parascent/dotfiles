@@ -29,6 +29,8 @@ augroup highlight_yank
     autocmd TextYankPost * silent! lua require'vim.highlight'.on_yank("IncSearch", 1000)
 augroup END
 
+autocmd BufNewFile,BufReadPost *.pug set filetype=pug
+
 if has('title') && (has('gui_running') || &title)
     set titlestring=
     set titlestring+=%f\                                              " file name
@@ -73,6 +75,8 @@ set exrc
 set secure
 set number
 set spell spelllang=en_us
+set splitbelow
+set splitright
 
 " :nmap <leader>e :NERDTreeToggle<CR>
 " :nmap <leader>e :NvimTreeToggle<CR>
@@ -149,6 +153,7 @@ function! DeleteInactiveBufs()
     echomsg nWipeouts . ' buffer(s) wiped out'
 endfunction
 command! Bdi :call DeleteInactiveBufs()
+command! BufferCloseInactive :call DeleteInactiveBufs()
 
 "jump between errors
 nnoremap [l :lprev<CR>
@@ -208,7 +213,7 @@ set shortmess+=c
 " ale wants this before Plugins
 " let g:ale_disable_lsp = 1
 
-let g:polyglot_disabled = ['markdown','c_sharp', 'cs', 'ts', 'typescript', 'javascript', 'js']
+" let g:polyglot_disabled = [ 'markdown','c_sharp', 'cs', 'ts', 'typescript', 'javascript', 'js', 'vim', 'lua', 'pug']
 
 call plug#begin('~/.config/nvim/plugged')
 
@@ -218,8 +223,9 @@ Plug 'tpope/vim-fugitive'
 Plug 'kdheepak/lazygit.nvim'
 Plug 'vim-utils/vim-man'
 Plug 'mbbill/undotree'
-Plug 'sheerun/vim-polyglot'
+" Plug 'sheerun/vim-polyglot'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/playground'
 Plug 'ThePrimeagen/refactoring.nvim'
 " Plug 'dyng/ctrlsf.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
@@ -233,7 +239,7 @@ Plug 'tpope/vim-surround'
 Plug 'ms-jpq/chadtree'
 Plug 'tommcdo/vim-exchange'
 "Languages
-Plug 'rust-lang/rust.vim'
+" Plug 'rust-lang/rust.vim'
 Plug 'jiangmiao/auto-pairs'
 Plug 'iloginow/vim-stylus'
 Plug 'tpope/vim-commentary'
@@ -269,7 +275,6 @@ Plug 'godlygeek/tabular'
 Plug 'preservim/tagbar'
 " Plug 'Yggdroot/indentLine'
 Plug 'lukas-reineke/indent-blankline.nvim'
-Plug 'inkarkat/vim-ReplaceWithRegister'
 Plug 'tpope/vim-abolish'
 Plug 'posva/vim-vue'
 " Plug 'yuttie/comfortable-motion.vim'
@@ -281,7 +286,7 @@ Plug 'mildred/vim-bufmru'
 " Plug 'zefei/vim-wintabs' "This plugin allows per window management of buffers
 Plug 'akinsho/nvim-bufferline.lua'
 Plug 'unblevable/quick-scope'
-Plug 'Shatur/neovim-session-manager'
+" Plug 'Shatur/neovim-session-manager'
 " Debugger Plugins
 Plug 'puremourning/vimspector'
 Plug 'szw/vim-maximizer'
@@ -304,7 +309,7 @@ Plug 'kyazdani42/nvim-web-devicons'
 "
 "UltiSnips
 Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
+" Plug 'honza/vim-snippets'
 " Telescope things
 "
 Plug 'nvim-lua/popup.nvim'
@@ -322,7 +327,7 @@ Plug 'kabouzeid/nvim-lspinstall'
 " Plug 'steelsojka/completion-buffers'
 " Plug 'RishabhRD/popfix'
 " Plug 'RishabhRD/nvim-lsputils'
-Plug 'hrsh7th/nvim-compe'
+" Plug 'hrsh7th/nvim-compe'
 Plug 'simrat39/symbols-outline.nvim'
 Plug 'ray-x/lsp_signature.nvim'
 
@@ -333,7 +338,8 @@ Plug 'kazhala/close-buffers.nvim'
 " Search and replace in multiple files
 Plug 'windwp/nvim-spectre'
 Plug 'vhyrro/neorg', { 'branch': 'unstable' } | Plug 'nvim-lua/plenary.nvim'
-
+" Plug 'kdheepak/tabline.nvim'
+Plug 'lukas-reineke/cmp-rg'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
@@ -344,9 +350,24 @@ Plug 'f3fora/cmp-spell'
 " https://github.com/thibthib18/mongo-nvim
 Plug 'thibthib18/mongo-nvim'
 
-Plug 'dbmrq/vim-dialect'
+" Plug 'dbmrq/vim-dialect'
 " markdown preview
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
+Plug 'inkarkat/vim-ReplaceWithRegister'
+
+" augroup qs_colors
+"   autocmd!
+"   autocmd ColorScheme * highlight QuickScopePrimary guifg='#A02000' gui=underline ctermfg=155 cterm=underline
+"   autocmd ColorScheme * highlight QuickScopeSecondary guifg='#0000FF' gui=underline ctermfg=81 cterm=underline
+" augroup END
+
+" Your .vimrc
+highlight QuickScopePrimary guifg='#aaaaaa' gui=underline ctermfg=20 cterm=underline
+highlight QuickScopeSecondary guifg='#5fffff' gui=underline ctermfg=81 cterm=underline
+
+"vim faker
+Plug 'https://github.com/khornberg/vim-faker'
 call plug#end()
 let g:indentLine_char_list = ['┊']
 "
@@ -379,8 +400,8 @@ nmap S <Plug>Lightspeed_S
 "
 nnoremap <silent> gd <cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> gD <cmd>lua vim.lsp.buf.declaration()<CR>
-nnoremap <silent> gr <cmd>lua vim.lsp.buf.references()<CR>
-nnoremap <silent> gi <cmd>lua vim.lsp.buf.implementation()<CR>
+nnoremap <silent> gR <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap <silent> gI <cmd>lua vim.lsp.buf.implementation()<CR>
 nnoremap <silent> K <cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
 nnoremap <silent> <F1> <cmd>lua vim.lsp.buf.signature_help()  <CR>
@@ -484,7 +505,7 @@ map <Leader>W :HopWordBC<CR>
 " let g:vem_tabline_show_icon = 0
 "
 "bufferline barbar
-let bufferline = get(g:, 'bufferline', {})
+" let bufferline = get(g:, 'bufferline', {})
 
 
 nmap cc gcc
@@ -536,20 +557,20 @@ nmap <F2> :TagbarToggle<CR>
 
 
 " --- vim go (polyglot) settings.
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_extra_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_structs = 1
-let g:go_highlight_types = 1
-let g:go_highlight_function_parameters = 1
-let g:go_highlight_function_calls = 1
-let g:go_highlight_generate_tags = 1
-let g:go_highlight_format_strings = 1
-let g:go_highlight_variable_declarations = 1
-let g:go_auto_sameids = 1
+" let g:go_highlight_build_constraints = 1
+" let g:go_highlight_extra_types = 1
+" let g:go_highlight_fields = 1
+" let g:go_highlight_functions = 1
+" let g:go_highlight_methods = 1
+" let g:go_highlight_operators = 1
+" let g:go_highlight_structs = 1
+" let g:go_highlight_types = 1
+" let g:go_highlight_function_parameters = 1
+" let g:go_highlight_function_calls = 1
+" let g:go_highlight_generate_tags = 1
+" let g:go_highlight_format_strings = 1
+" let g:go_highlight_variable_declarations = 1
+" let g:go_auto_sameids = 1
 
 " let g:neoyank#save_registers = ['+','*']
 
@@ -649,7 +670,7 @@ require 'mongo-nvim'.setup {
 require"telescope".load_extension("frecency")
 require('telescope').load_extension('ultisnips')
 require'telescope'.load_extension('project')
-require('telescope').load_extension('session_manager')
+--require('telescope').load_extension('session_manager')
 require('telescope').setup {
   defaults ={
     file_ignore_patterns = {'.png', '.jpeg', '.svg', '.jpg', 'tags', 'pdf'},
@@ -711,7 +732,7 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
   buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  buf_set_keymap('n', 'gR', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
   buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
   buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
   buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
@@ -767,17 +788,22 @@ cmp.setup({
     end,
   },
   mapping = {
+    ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<Down>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+    ['<Up>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
     ['<C-e>'] = cmp.mapping.close(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    ['<CR>'] = cmp.mapping.confirm(),
   },
   sources = {
     { name = 'nvim_lsp' },
     { name = 'ultisnips' },
     { name = 'buffer' },
-    { name = 'spell' },
+    { name = 'rg' },
+    --{ name = 'spell' },
   }
 })
 
@@ -848,23 +874,30 @@ vim.g.symbols_outline = {
     lsp_blacklist = {},
 }
 
-local chadtree_settings = {
-  ["theme.text_colour_set"] = "nerdtree_syntax_dark"
+vim.g.chadtree_settings = {
+  theme = {
+    text_colour_set = "nerdtree_syntax_dark",
+    icon_colour_set = "github",
+  },
+  view ={
+    open_direction = "right"
+    }
 }
-vim.api.nvim_set_var("chadtree_settings", chadtree_settings)
+
+-- vim.api.nvim_set_var("chadtree_settings", chadtree_settings)
 
 EOF
 
 nmap <Leader>s :SymbolsOutline<CR>
 " nvim bufferline stuff
-nnoremap <silent>[b :BufferLineCycleNext<CR>
-nnoremap <silent>]b :BufferLineCyclePrev<CR>
+" nnoremap <silent>[b :BufferLineCycleNext<CR>
+" nnoremap <silent>]b :BufferLineCyclePrev<CR>
 
 " These commands will move the current buffer backwards or forwards in the bufferline
-nnoremap <silent>{b :BufferLineMoveNext<CR>
-nnoremap <silent>}b :BufferLineMovePrev<CR>
+" nnoremap <silent>{b :BufferLineMoveNext<CR>
+" nnoremap <silent>}b :BufferLineMovePrev<CR>
 
-nnoremap <silent> gb :BufferLinePick<CR>
+" nnoremap <silent> gb :BufferLinePick<CR>
 " nvim bufferline stuff
 
 
@@ -908,11 +941,20 @@ nnoremap <Leader>+ :vertical resize +5<CR>
 nnoremap <Leader>- :vertical resize -5<CR>
 nnoremap <Leader>0 :resize +5<CR>
 nnoremap <Leader>9 :resize -5<CR>
-nnoremap <Leader>ee oif err != nil {<CR>log.Fatalf("%+v\n", err)<CR>}<CR><esc>kkI<esc>
+" nnoremap <Leader>ee oif err != nil {<CR>log.Fatalf("%+v\n", err)<CR>}<CR><esc>kkI<esc>
 " nnoremap <C-b> :Buffers<CR>
 " Vim with me
 " nnoremap <leader>vwm :colorscheme gruvbox<bar>:set background=dark<CR>
 " nmap <leader>vtm :highlight Pmenu ctermbg=gray guibg=gray
+" 0th hole register
+nnoremap d "dd
+nnoremap dd "ddd
+nnoremap D "dD
+vnoremap d "dd
+vnoremap dd "ddd
+
+nnoremap c "cc
+vnoremap c "cc
 
 nnoremap x d
 vnoremap x d
@@ -982,11 +1024,17 @@ nnoremap <leader>dbdl <cmd>lua require('mongo-nvim.telescope.pickers').document_
 " Tab and Shift-Tab in normal mode to navigate buffers
 :nmap <Tab> :BufMRUNext<CR>
 :nmap <S-Tab> :BufMRUPrev<CR>
+:nmap <C-Tab> :tabNext<CR>
+"
+" :nmap <Tab> :TablineBufferNext<CR>
+" :nmap <S-Tab> :TablineBufferPrevious<CR>
 " :nmap <Tab> :WintabsNext<CR>
 " :nmap <S-Tab> :WintabsPrevious<CR>
 "Denite mappings because of neoyank
 " Define mappings
 let g:AutoPairsShortcutToggle = ''
+let g:AutoPairsFlyMode = 1
+let g:AutoPairsShortcutBackInsert = '<M-b>'
 
 "BClose Command
 
@@ -1092,10 +1140,30 @@ endif
 lua << EOF
 local parser_configs = require('nvim-treesitter.parsers').get_parser_configs()
 
+parser_configs.vue.install_info.url = "https://github.com/zealot128/tree-sitter-vue.git"
+
+parser_configs.pug = {
+   install_info = {
+      url = "https://github.com/zealot128/tree-sitter-pug", -- local path or git repo
+      -- url = "/Users/stefan/LocalProjects/tree-sitter-pug",
+      files = { "src/parser.c", "src/scanner.cc" },
+   },
+   filetype = "pug", -- if filetype does not agrees with parser name
+}
+
+--parser_configs.pug = {
+  --install_info = {
+    --url = "/home/shaffaaf/Code/ref/tree-sitter-pug", -- local path or git repo
+    --files = {"src/parser.c", "src/scanner.cc" },
+    --branch = "master"
+  --},
+  --used_by = {"jade"} -- additional filetypes that use this parser
+--}
+
 parser_configs.norg = {
   install_info = {
       url = "https://github.com/vhyrro/tree-sitter-norg",
-      files = { "src/parser.c" },
+      files = { "src/parser.c", "src/scanner.cc" },
       branch = "main"
   },
 }
@@ -1103,15 +1171,11 @@ parser_configs.norg = {
 require'nvim-treesitter.configs'.setup {
   highlight = {
     enable = true,
-    disable = {"vue", "pug"},
-    custom_captures = {
-      -- Highlight the @foo.bar capture group with the "Identifier" highlight group.
-      ["foo.bar"] = "Identifier",
-    },
+    disable = {},
   },
   incremental_selection = {
     enable = true,
-    disable = {"vue", "pug"},
+    disable = {},
     keymaps = {
       init_selection = "gnn",
       node_incremental = "grn",
@@ -1121,26 +1185,31 @@ require'nvim-treesitter.configs'.setup {
   },
   indent = {
     enable = true,
-    disable = {"vue", "pug", "dartls"},
+    -- disable = {"vue", "pug", "dartls"},
   },
 }
 
 --Neorg
---require('neorg').setup {
-  ---- Tell Neorg what modules to load
-  --load = {
-    --["core.defaults"] = {}, -- Load all the default modules
-    --["core.norg.concealer"] = {}, -- Allows for use of icons
-    --["core.norg.dirman"] = { -- Manage your directories with Neorg
-      --config = {
-        --workspaces = {
-          --my_workspace = "~/neorg"
-        --}
-      --}
-    --}
-  --},
---}
+require'neorg'.setup {
+  -- Tell Neorg what modules to load
+  load = {
+    ["core.defaults"] = {}, -- Load all the default modules
+    ["core.norg.concealer"] = {}, -- Allows for use of icons
+    ["core.norg.dirman"] = { -- Manage your directories with Neorg
+      config = {
+        workspaces = {
+          my_workspace = "~/neorg"
+        }
+      }
+    }
+  },
+}
+
 --print('Hello from lua')
+
+require'hop'.setup {
+
+  }
 EOF
 
 let g:UltiSnipsExpandTrigger='<c-l>'
