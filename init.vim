@@ -74,7 +74,7 @@ set updatetime=300
 set exrc
 set secure
 set number
-set spell spelllang=en_us
+set nospell spelllang=en_us
 set splitbelow
 set splitright
 
@@ -113,6 +113,8 @@ nnoremap <expr> j (v:count > 5 ? "m'" . v:count : "") . 'j'
 
 "move to next desired location
 inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>', 'cW')<cr><Right>
+imap ;; <Esc>A;<Esc>
+imap ,, <Esc>A,<Esc>
 " inoremap <silent> jj<c-o> getline('.')[col('.')-1] =~? '[]>)}]' || getline('.')[col('.')-1] =~? '[''"`]' && synIDattr(synID(line("."), col(".")+1, 1), "name") !~? 'string'
 "moving text
 vnoremap J :m '>+1<CR>gv=gv
@@ -312,6 +314,9 @@ Plug 'SirVer/ultisnips'
 " Plug 'honza/vim-snippets'
 " Telescope things
 "
+" Plug 'kamykn/spelunker.vim'
+" Plug 'kamykn/popup-menu.nvim'
+
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
@@ -1033,7 +1038,7 @@ nnoremap <leader>dbdl <cmd>lua require('mongo-nvim.telescope.pickers').document_
 "Denite mappings because of neoyank
 " Define mappings
 let g:AutoPairsShortcutToggle = ''
-let g:AutoPairsFlyMode = 1
+" let g:AutoPairsFlyMode = 1
 let g:AutoPairsShortcutBackInsert = '<M-b>'
 
 "BClose Command
