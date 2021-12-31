@@ -285,8 +285,9 @@ Plug 'nvim-telescope/telescope-project.nvim'
 " nvim lsp stuff
 Plug 'neovim/nvim-lspconfig'
 Plug 'williamboman/nvim-lsp-installer'
-Plug 'glepnir/lspsaga.nvim'
+Plug 'tami5/lspsaga.nvim'
 Plug 'simrat39/symbols-outline.nvim'
+Plug 'liuchengxu/vista.vim'
 "Close buffers
 Plug 'kazhala/close-buffers.nvim'
 Plug 'norcalli/nvim-colorizer.lua'
@@ -936,16 +937,16 @@ endif
 lua << EOF
 local parser_configs = require('nvim-treesitter.parsers').get_parser_configs()
 
-parser_configs.vue.install_info.url = "https://github.com/zealot128/tree-sitter-vue.git"
-
-parser_configs.pug = {
-   install_info = {
-      url = "https://github.com/zealot128/tree-sitter-pug", -- local path or git repo
-      -- url = "/Users/stefan/LocalProjects/tree-sitter-pug",
-      files = { "src/parser.c", "src/scanner.cc" },
-   },
-   filetype = "pug", -- if filetype does not agrees with parser name
-}
+ --parser_configs.vue.install_info.url = "https://github.com/zealot128/tree-sitter-vue.git"
+ --
+ --parser_configs.pug = {
+    --install_info = {
+       --url = "https://github.com/zealot128/tree-sitter-pug", -- local path or git repo
+       ---- url = "/Users/stefan/LocalProjects/tree-sitter-pug",
+       --files = { "src/parser.c", "src/scanner.cc" },
+    --},
+    --filetype = "pug", -- if filetype does not agrees with parser name
+ --}
 
 
 parser_configs.norg = {
