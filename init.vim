@@ -22,7 +22,10 @@ augroup CursorLine
   au VimEnter,WinEnter,BufWinEnter * setlocal cursorcolumn
   au WinLeave * setlocal nocursorline
   au WinLeave * setlocal nocursorcolumn
+  autocmd BufWinEnter * if line2byte(line("$") + 1) > 100 | set nocursorcolumn | endif
 augroup END
+
+autocmd BufWinEnter * if line2byte(line("$") + 1) > 1000000 | syntax clear | endif
 
 augroup highlight_yank
     autocmd!
@@ -73,14 +76,15 @@ set showbreak=\ \\_
 set updatetime=300
 set exrc
 set secure
-set number
-set nospell spelllang=en_us
+set spell
+set spelllang=en_us
+set spelloptions=camel
 set splitbelow
 set splitright
 
 " :nmap <leader>e :NERDTreeToggle<CR>
 " :nmap <leader>e :NvimTreeToggle<CR>
-:nmap <leader>e :CHADopen<CR>
+nmap <leader>e :CHADopen<CR>
 :nmap <space>r :registers<CR>
 :vmap <space>r :registers<CR>
 "Custom tabstops
@@ -112,9 +116,12 @@ nnoremap <expr> k (v:count > 5 ? "m'" . v:count : "") . 'k'
 nnoremap <expr> j (v:count > 5 ? "m'" . v:count : "") . 'j'
 
 "move to next desired location
-inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>', 'cW')<cr><Right>
-imap ;; <Esc>A;<Esc>
-imap ,, <Esc>A,<Esc>
+inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>\\|"\\|`\\|,' , 'cW')<cr><Right>
+imap ;; <Esc>A;
+imap ,, <Esc>A,
+imap ,jj <Esc>A,<Cr><Esc>j,
+imap ,kk <Esc>A,<Cr><Esc>k,
+imap ooo <Cr>,
 " inoremap <silent> jj<c-o> getline('.')[col('.')-1] =~? '[]>)}]' || getline('.')[col('.')-1] =~? '[''"`]' && synIDattr(synID(line("."), col(".")+1, 1), "name") !~? 'string'
 "moving text
 vnoremap J :m '>+1<CR>gv=gv
@@ -215,63 +222,36 @@ set shortmess+=c
 " ale wants this before Plugins
 " let g:ale_disable_lsp = 1
 
-" let g:polyglot_disabled = [ 'markdown','c_sharp', 'cs', 'ts', 'typescript', 'javascript', 'js', 'vim', 'lua', 'pug']
 
 call plug#begin('~/.config/nvim/plugged')
 
 Plug 'dkprice/vim-easygrep'
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-unimpaired'
 Plug 'kdheepak/lazygit.nvim'
 Plug 'vim-utils/vim-man'
 Plug 'mbbill/undotree'
-" Plug 'sheerun/vim-polyglot'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/playground'
 Plug 'ThePrimeagen/refactoring.nvim'
-" Plug 'dyng/ctrlsf.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-" Plug 'Shougo/neoyank.vim'
-" Plug 'justinhoward/fzf-neoyank'
-" Plug 'voldikss/vim-floaterm'
 Plug 'junegunn/vim-peekaboo'
 Plug 'tpope/vim-surround'
-" Plug 'preservim/nerdtree'
 Plug 'ms-jpq/chadtree'
 Plug 'tommcdo/vim-exchange'
 "Languages
-" Plug 'rust-lang/rust.vim'
 Plug 'jiangmiao/auto-pairs'
 Plug 'iloginow/vim-stylus'
-Plug 'tpope/vim-commentary'
-"  I AM SO SORRY FOR DOING COLOR SCHEMES IN MY VIMRC, BUT I HAVE
-"  TOOOOOOOOOOOOO
-" Plug 'gruvbox-community/gruvbox'
-" Plug 'sainnhe/gruvbox-material'
-" Plug 'rktjmp/lush.nvim'
-" Plug 'npxbr/gruvbox.nvim'
-" Plug 'Murtaza-Udaipurwala/gruvqueen'
+Plug 'terrortylor/nvim-comment'
 Plug 'rktjmp/lush.nvim'
 Plug 'ellisonleao/gruvbox.nvim'
+Plug 'rebelot/kanagawa.nvim'
 Plug 'ryanoasis/vim-devicons'
-" Plug 'pacha/vem-tabline'
 Plug 'machakann/vim-highlightedyank'
-" Plug 'phanviet/vim-monokai-pro'
 Plug 'hoob3rt/lualine.nvim'
-" Plug 'vim-airline/vim-airline'
-" Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
-" Plug 'flazz/vim-colorschemes'
-"Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-repeat'
-" Plug 'svermeulen/vim-easyclip'
-" Plug 'Shougo/denite.nvim', { 'do': ':UpdateRemotePlugins' }
-" Plug 'easymotion/vim-easymotion'
-" Plug 'justinmk/vim-sneak'
-" Plug 'rhysd/clever-f.vim'
-" Plug 'hushicai/tagbar-javascript.vim'
-" Plug 'maxbrunsfeld/vim-yankstack'
 Plug 'ggandor/lightspeed.nvim'
 Plug 'godlygeek/tabular'
 Plug 'preservim/tagbar'
@@ -279,44 +259,22 @@ Plug 'preservim/tagbar'
 Plug 'lukas-reineke/indent-blankline.nvim'
 Plug 'tpope/vim-abolish'
 Plug 'posva/vim-vue'
-" Plug 'yuttie/comfortable-motion.vim'
 Plug 'phaazon/hop.nvim'
 Plug 'vim-scripts/loremipsum'
 Plug 'wesQ3/vim-windowswap'
-" Plug 'weynhamz/vim-plugin-minibufexpl'
 Plug 'mildred/vim-bufmru'
 " Plug 'zefei/vim-wintabs' "This plugin allows per window management of buffers
 Plug 'akinsho/nvim-bufferline.lua'
 Plug 'unblevable/quick-scope'
-" Plug 'Shatur/neovim-session-manager'
 " Debugger Plugins
 Plug 'puremourning/vimspector'
 Plug 'szw/vim-maximizer'
 Plug 'eliba2/vim-node-inspect'
 Plug 'kyazdani42/nvim-web-devicons'
-" Plug 'kyazdani42/nvim-tree.lua'
-" Plug 'romgrk/barbar.nvim'
-"
-"
-"
-" fern things
-" Plug 'antoinemadec/FixCursorHold.nvim'
-" Plug 'lambdalisue/fern.vim'
-" Plug 'lambdalisue/fern-renderer-devicons.vim'
-" Plug 'lambdalisue/fern-hijack.vim'
-" Plug 'LumaKernel/fern-mapping-fzf.vim'
-
-" Plug 'nathanaelkane/vim-indent-guides'
-" Plug 'codota/tabnine-vim'
-"
 "UltiSnips
 Plug 'SirVer/ultisnips'
 " Plug 'honza/vim-snippets'
 " Telescope things
-"
-" Plug 'kamykn/spelunker.vim'
-" Plug 'kamykn/popup-menu.nvim'
-
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
@@ -326,56 +284,40 @@ Plug 'fhill2/telescope-ultisnips.nvim'
 Plug 'nvim-telescope/telescope-project.nvim'
 " nvim lsp stuff
 Plug 'neovim/nvim-lspconfig'
-Plug 'kabouzeid/nvim-lspinstall'
-" Plug 'nvim-lua/completion-nvim'
-" Plug 'nvim-treesitter/completion-treesitter'
-" Plug 'steelsojka/completion-buffers'
-" Plug 'RishabhRD/popfix'
-" Plug 'RishabhRD/nvim-lsputils'
-" Plug 'hrsh7th/nvim-compe'
+Plug 'williamboman/nvim-lsp-installer'
+Plug 'glepnir/lspsaga.nvim'
 Plug 'simrat39/symbols-outline.nvim'
-Plug 'ray-x/lsp_signature.nvim'
-
 "Close buffers
 Plug 'kazhala/close-buffers.nvim'
-" Plug 'gelguy/wilder.nvim'
-"
+Plug 'norcalli/nvim-colorizer.lua'
 " Search and replace in multiple files
 Plug 'windwp/nvim-spectre'
 Plug 'vhyrro/neorg', { 'branch': 'unstable' } | Plug 'nvim-lua/plenary.nvim'
-" Plug 'kdheepak/tabline.nvim'
 Plug 'lukas-reineke/cmp-rg'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 Plug 'f3fora/cmp-spell'
-
 " Plugins for dbs
-" https://github.com/thibthib18/mongo-nvim
 Plug 'thibthib18/mongo-nvim'
-
 " Plug 'dbmrq/vim-dialect'
 " markdown preview
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 
 Plug 'inkarkat/vim-ReplaceWithRegister'
 
-" augroup qs_colors
-"   autocmd!
-"   autocmd ColorScheme * highlight QuickScopePrimary guifg='#A02000' gui=underline ctermfg=155 cterm=underline
-"   autocmd ColorScheme * highlight QuickScopeSecondary guifg='#0000FF' gui=underline ctermfg=81 cterm=underline
-" augroup END
-
-" Your .vimrc
-highlight QuickScopePrimary guifg='#aaaaaa' gui=underline ctermfg=20 cterm=underline
-highlight QuickScopeSecondary guifg='#5fffff' gui=underline ctermfg=81 cterm=underline
+" Plug 'MunifTanjim/nui.nvim'
+" Plug 'VonHeikemen/searchbox.nvim'
 
 "vim faker
 Plug 'https://github.com/khornberg/vim-faker'
 call plug#end()
 let g:indentLine_char_list = ['┊']
 "
+" Your .vimrc
+highlight QuickScopePrimary guifg='#aaaaaa' gui=underline ctermfg=20 cterm=underline
+highlight QuickScopeSecondary guifg='#5fffff' gui=underline ctermfg=81 cterm=underline
 "session manager thingy
 let g:autoload_last_session=v:false
 "Wilder options
@@ -387,50 +329,23 @@ let g:autoload_last_session=v:false
 "lightspeed thingies
 nmap s <Plug>Lightspeed_s
 nmap S <Plug>Lightspeed_S
-" " only / and ? are enabled by default
-" call wilder#set_option('modes', ['/', '?', ':'])
-" call wilder#set_option('pipeline', [
-"       \   wilder#branch(
-"       \     wilder#python_file_finder_pipeline({
-"       \       'file_command': ['find', '.', '-type', 'f', '-printf', '%P\n'],
-"       \       'dir_command': ['find', '.', '-type', 'd', '-printf', '%P\n'],
-"       \       'filters': ['fuzzy_filter', 'difflib_sorter'],
-"       \     }),
-"       \     wilder#cmdline_pipeline(),
-"       \     wilder#python_search_pipeline(),
-"       \   ),
-"       \ ])
-
-" LSP config (the mappings used in the default file don't quite work right)
 "
-nnoremap <silent> gd <cmd>lua vim.lsp.buf.definition()<CR>
-nnoremap <silent> gD <cmd>lua vim.lsp.buf.declaration()<CR>
-nnoremap <silent> gR <cmd>lua vim.lsp.buf.references()<CR>
-nnoremap <silent> gI <cmd>lua vim.lsp.buf.implementation()<CR>
-nnoremap <silent> K <cmd>lua vim.lsp.buf.hover()<CR>
-nnoremap <silent> <C-k> <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
-nnoremap <silent> <F1> <cmd>lua vim.lsp.buf.signature_help()  <CR>
-nnoremap <silent> <C-n> <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
-nnoremap <silent> <C-p> <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
-
-nnoremap <silent> <leader>fu <cmd>Telescope lsp_references<cr>
-nnoremap <silent> <leader>gd <cmd>Telescope lsp_definitions<cr>
-nnoremap <silent> <leader>rn <cmd>lua vim.lsp.buf.rename()<cr>
-nnoremap <silent> <leader>xd <cmd>Telescope lsp_document_diagnostics<cr>
-nnoremap <silent> <leader>xD <cmd>Telescope lsp_workspace_diagnostics<cr>
-nnoremap <silent> <leader>xn <cmd>lua vim.lsp.diagnostic.goto_next()<cr>
-nnoremap <silent> <leader>xp <cmd>lua vim.lsp.diagnostic.goto_prev()<cr>
-nnoremap <silent> <leader>xx <cmd>Telescope lsp_code_actions<cr>
-nnoremap <silent> <leader>xX <cmd>%Telescope lsp_range_code_actions<cr>
-" autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()
-" autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()
-
-
-" let g:indent_guides_enable_on_vim_startup = 1
-" let g:indent_guides_start_level = 1
-" let g:indent_guides_guide_size = 1
-
-
+"Lsp saga stuff
+nnoremap <silent> gh :Lspsaga lsp_finder<CR>
+nnoremap <silent><leader>ca :Lspsaga code_action<CR>
+vnoremap <silent><leader>ca :<C-U>Lspsaga range_code_action<CR>
+nnoremap <silent><C-k> :Lspsaga hover_doc<CR>
+nnoremap <silent> <C-f> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(1)<CR>
+nnoremap <silent> <C-g> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1)<CR>
+nnoremap <silent> gs :Lspsaga signature_help<CR>
+nnoremap <silent>gR :Lspsaga rename<CR>
+nnoremap <silent> gd :Lspsaga preview_definition<CR>
+nnoremap <silent><leader>cd <cmd>lua require'lspsaga.diagnostic'.show_line_diagnostics()<CR>
+nnoremap <silent> <leader>cd :Lspsaga show_line_diagnostics<CR>
+nnoremap <silent><leader>cc <cmd>lua require'lspsaga.diagnostic'.show_cursor_diagnostics()<CR>
+nnoremap <silent> [e :Lspsaga diagnostic_jump_next<CR>
+nnoremap <silent> ]e :Lspsaga diagnostic_jump_prev<CR>
+"
 " supposed to make faster but is annoying
 " let g:cursorhold_updatetime = 2000
 
@@ -474,46 +389,18 @@ nmap <leader>dcbp <Plug>VimspectorToggleConditionalBreakpoint
 let g:peekaboo_window = "bel bo 32new"
 "highlightedyank
 let g:highlightedyank_highlight_duration = -1
-"confortable scroll
-" if(has("gui_running")==0 && exists("g:GuiLoaded") ==0)
-"     let g:comfortable_motion_scroll_down_key = "j"
-"     let g:comfortable_motion_scroll_up_key = "k"
-"     noremap <silent> <ScrollWheelDown> :call comfortable_motion#flick(40)<CR>
-"     noremap <silent> <ScrollWheelUp>   :call comfortable_motion#flick(-40)<CR>
-" endif
-"autosave
-" autocmd CursorHold * update
 nmap <C-s> :w<CR>
 
 " let g:floaterm_width = 0.9
 " let g:floaterm_height = 0.8
 
-" <Leader>f{char} to move to {char}
-" map  <Leader>f <Plug>(easymotion-bd-f)
-" nmap <Leader>f <Plug>(easymotion-overwin-f)
-
-" s{char}{char} to move to {char}{char}
-" nmap s <Plug>(easymotion-overwin-f2)
-" nnoremap <Leader>s <Plug>Sneak_s
-" nnoremap <Leader>S <Plug>Sneak_S
-
-" nnoremap cs S
-" Move to line
-" map <Leader>L <Plug>(easymotion-bd-jk)
-" nmap <Leader>L <Plug>(easymotion-overwin-line)
-
 " Move to word
 map  <Leader>w :HopWordAC<CR>
 map <Leader>W :HopWordBC<CR>
 "
-"icons
-" let g:vem_tabline_show_icon = 0
-"
-"bufferline barbar
-" let bufferline = get(g:, 'bufferline', {})
 
-
-nmap cc gcc
+noremap cc S
+noremap cl s
 
 function! Get_visual_selection()
   " Why is this not a built-in Vim script function?!
@@ -540,59 +427,28 @@ nnoremap   <silent>   <F7>   :Ag<CR>
 nnoremap   <silent>   <F7>   :Ag<CR>
 vnoremap    <expr>   <F7>Get_visual_selection()<CR>
 tnoremap   <silent>   <F7>   :FloatermToggle<CR>
-"easyclip rempaps m to cut so here remapping gm to do m or mark
-" nnoremap gm m
-let g:vue_pre_processors = 'detect_on_enter'
 
 nnoremap <space>n :noh<CR>
-"omnisharp options
-" let g:OmniSharp_server_stdio = 1
-" let g:OmniSharp_start_without_solution = 1
 
 " fzf window settings
 let g:fzf_layout = {'up':'~90%', 'window': { 'width': 0.8, 'height': 0.8,'yoffset':0.5,'xoffset': 0.5, 'highlight': 'Todo', 'border': 'sharp' } }
-"airline setting
-" let g:airline#extensions#tabline#enabled = 0
-" let g:airline_theme='base16_gruvbox_dark_hard'
 
-" let g:gruvbox_contrast_dark = 'hard'
-" --- The Greatest plugin of all time.  I am not bias
 let g:vim_be_good_floating = 1
 nmap <F2> :TagbarToggle<CR>
 
 
-" --- vim go (polyglot) settings.
-" let g:go_highlight_build_constraints = 1
-" let g:go_highlight_extra_types = 1
-" let g:go_highlight_fields = 1
-" let g:go_highlight_functions = 1
-" let g:go_highlight_methods = 1
-" let g:go_highlight_operators = 1
-" let g:go_highlight_structs = 1
-" let g:go_highlight_types = 1
-" let g:go_highlight_function_parameters = 1
-" let g:go_highlight_function_calls = 1
-" let g:go_highlight_generate_tags = 1
-" let g:go_highlight_format_strings = 1
-" let g:go_highlight_variable_declarations = 1
-" let g:go_auto_sameids = 1
-
-" let g:neoyank#save_registers = ['+','*']
-
 let g:wintabs_display='statusline'
 
 " colorscheme options
-let g:gruvqueen_transparent_background = v:true
-" let g:gruvqueen_background_color = '#3b3b3b'
-let g:gruvqueen_italic_comments = v:true
-let g:gruvqueen_italic_keywords = v:true
-let g:gruvqueen_italic_functions = v:true
-let g:gruvqueen_italic_variables = v:true
-let g:gruvqueen_invert_selection = v:true
-let g:gruvqueen_style = 'original'
 set background=dark
 
 colorscheme gruvbox
+highlight! CmpItemAbbrMatch guibg=NONE guifg=#569CD6
+highlight! CmpItemAbbrMatchFuzzy guibg=NONE guifg=#569CD6
+highlight! CmpItemKindFunction guibg=NONE guifg=#C586C0
+highlight! CmpItemKindMethod guibg=NONE guifg=#C586C0
+highlight! CmpItemKindVariable guibg=NONE guifg=#9CDCFE
+highlight! CmpItemKindKeyword guibg=NONE guifg=#D4D4D4
 
 if executable('rg')
     let g:rg_derive_root='true'
@@ -616,8 +472,6 @@ nnoremap Y y$
 " onoremap j j
 " onoremap k k
 
-" map f <Plug>Sneak_s
-" map F <Plug>Sneak_S
 
 let g:netrw_browse_split = 2
 let g:vrfr_rg = 'true'
@@ -666,6 +520,10 @@ nnoremap gp `[v`]
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
 lua << EOF
+-- require 'trouble'.setup {}
+
+require 'colorizer'.setup()
+require('nvim_comment').setup()
 require 'mongo-nvim'.setup {
   -- connection string to your mongodb
   connection_string = "mongodb://127.0.0.1:27017",
@@ -715,7 +573,7 @@ require('lualine').setup {
 require("bufferline").setup{}
 
 local on_attach = function(client, bufnr)
-  --require'lsp_signature'.on_attach()
+  require'lsp_signature'.on_attach()
   local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
   local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
@@ -725,24 +583,8 @@ local on_attach = function(client, bufnr)
   -- Mappings.
   local opts = { noremap=true, silent=true }
 
-  -- See `:help vim.lsp.*` for documentation on any of the below functions
-  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-  buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-  buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-  buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-  buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-  buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-  buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-  buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-  buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  buf_set_keymap('n', 'gR', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
-  buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
-  buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
-  buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
-  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+   buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+   buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
 
   -- Set some keybinds conditional on server capabilities
   if client.resolved_capabilities.document_formatting then
@@ -761,8 +603,6 @@ local on_attach = function(client, bufnr)
       hi LspReferenceWrite cterm=bold ctermbg=red guibg=LightYellow
       augroup lsp_document_highlight
       autocmd! * <buffer>
-      autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-      autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
       augroup END
       ]], false)
   end
@@ -771,18 +611,11 @@ end
 local nvim_lsp = require('lspconfig')
 
 local pid = vim.fn.getpid()
--- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
---vim.g.completion_chain_complete_list = {
-  --default = {
-    --{ complete_items = { 'lsp' } },
-    --{ complete_items = { 'treesitter' } },
-    --{ complete_items = { 'buffers' } },
-    --{ mode = { '<c-p>' } },
-    --{ mode = { '<c-n>' } }
-  --},
---}
-
 vim.o.completeopt = "menuone,noselect"
+
+require"cmp_nvim_ultisnips".setup {
+  show_snippets = "all",
+}
 
 local cmp = require'cmp'
 
@@ -814,33 +647,25 @@ cmp.setup({
 
 local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 
--- local omnisharp_bin = "/usr/bin/omnisharp"
---
- -- require'lspconfig'.omnisharp.setup{
-   -- capabilities = capabilities,
-   -- cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) },
-   -- -- root_dir = util.root_pattern("*.csproj", "*.sln"),
-   -- require'cmp'.setup{}
- -- }
 
 require'lspconfig'.dartls.setup{
   capabilities = capabilities,
   cmd = { "dart", "/opt/dart-sdk/bin/snapshots/analysis_server.dart.snapshot", "--lsp" },
 }
 
-require'lspinstall'.setup() -- important
+local lsp_installer = require("nvim-lsp-installer")
+lsp_installer.on_server_ready(function(server)
+    local opts = {}
 
-local servers = require'lspinstall'.installed_servers()
-for _, server in pairs(servers) do
-  require'lspconfig'[server].setup{
-    capabilities = capabilities,
-    on_attach = on_attach,
-  }
-end
+    -- (optional) Customize the options passed to the server
+    -- if server.name == "tsserver" then
+    --     opts.root_dir = function() ... end
+    -- end
 
- --require'lspconfig'.typescript.setup{}
- --require'lspconfig'.vue.setup{}
-
+    -- This setup() function is exactly the same as lspconfig's setup function.
+    -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
+    server:setup(opts)
+end)
 
 local t = function(str)
   return vim.api.nvim_replace_termcodes(str, true, true, true)
@@ -894,17 +719,6 @@ vim.g.chadtree_settings = {
 EOF
 
 nmap <Leader>s :SymbolsOutline<CR>
-" nvim bufferline stuff
-" nnoremap <silent>[b :BufferLineCycleNext<CR>
-" nnoremap <silent>]b :BufferLineCyclePrev<CR>
-
-" These commands will move the current buffer backwards or forwards in the bufferline
-" nnoremap <silent>{b :BufferLineMoveNext<CR>
-" nnoremap <silent>}b :BufferLineMovePrev<CR>
-
-" nnoremap <silent> gb :BufferLinePick<CR>
-" nvim bufferline stuff
-
 
 " nmap <leader>b :Buffers<CR>
 nmap <C-b> :Buffers<CR>
@@ -913,13 +727,13 @@ nnoremap <Leader>fl :Telescope current_buffer_fuzzy_find<cr>
 " nmap <leader>fl :BLines<CR>
 " nmap <leader>ff :Ag<CR>
 map <leader>ff :Telescope find_files<CR>
+map <leader>fs :Telescope ultisnips<CR>
 nmap <leader>fw :Telescope live_grep<CR>
 nmap <leader>fb :Telescope buffers<CR>
 nmap <leader>fr :Telescope frecency<CR>
 " nmap <leader>fp :Files<CR>
 nmap <leader>ft :BTags<CR>
 " nmap <leader>fr :Tags<CR>
-" vmap <leader>b :CocList buffers<CR>
 " " Paste from clipboard
 nnoremap <leader>p "+p
 nnoremap <leader>P "+P
@@ -974,25 +788,7 @@ function! s:check_back_space() abort
     return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-" inoremap <silent><expr> <TAB>
-"             \ pumvisible() ? "\<C-n>" :
-"             \ <SID>check_back_space() ? "\<TAB>" :
-"             \ coc#refresh()
 
-" inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-" inoremap <silent><expr> <C-space> coc#refresh()
-
-" GoTo code navigation.
-" nmap <leader>gd <Plug>(coc-definition)
-" nmap <leader>gy <Plug>(coc-type-definition)
-" nmap <leader>gi <Plug>(coc-implementation)
-" nmap <leader>gr <Plug>(coc-references)
-" nmap <leader>rr <Plug>(coc-rename)
-" nmap <leader>g[ <Plug>(coc-diagnostic-prev)
-" nmap <leader>g] <Plug>(coc-diagnostic-next)
-" nmap <silent> <leader>gp <Plug>(coc-diagnostic-prev-error)
-" nmap <silent> <leader>gn <Plug>(coc-diagnostic-next-error)
-nnoremap <leader>cr :CocRestart
 
 " Sweet Sweet FuGITive
 nmap <leader>gj :diffget //3<CR>
@@ -1031,11 +827,6 @@ nnoremap <leader>dbdl <cmd>lua require('mongo-nvim.telescope.pickers').document_
 :nmap <S-Tab> :BufMRUPrev<CR>
 :nmap <C-Tab> :tabNext<CR>
 "
-" :nmap <Tab> :TablineBufferNext<CR>
-" :nmap <S-Tab> :TablineBufferPrevious<CR>
-" :nmap <Tab> :WintabsNext<CR>
-" :nmap <S-Tab> :WintabsPrevious<CR>
-"Denite mappings because of neoyank
 " Define mappings
 let g:AutoPairsShortcutToggle = ''
 " let g:AutoPairsFlyMode = 1
@@ -1156,14 +947,6 @@ parser_configs.pug = {
    filetype = "pug", -- if filetype does not agrees with parser name
 }
 
---parser_configs.pug = {
-  --install_info = {
-    --url = "/home/shaffaaf/Code/ref/tree-sitter-pug", -- local path or git repo
-    --files = {"src/parser.c", "src/scanner.cc" },
-    --branch = "master"
-  --},
-  --used_by = {"jade"} -- additional filetypes that use this parser
---}
 
 parser_configs.norg = {
   install_info = {
@@ -1209,12 +992,17 @@ require'neorg'.setup {
     }
   },
 }
-
 --print('Hello from lua')
 
 require'hop'.setup {
 
   }
+
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+      vim.lsp.diagnostic.on_publish_diagnostics, {
+        update_in_insert = true,
+      }
+    )
 EOF
 
 let g:UltiSnipsExpandTrigger='<c-l>'
