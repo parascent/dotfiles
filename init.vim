@@ -8,6 +8,7 @@ set mouse=a
 set relativenumber
 let mapleader = " "
 set number
+set signcolumn=yes
 set title
 
 augroup numbertoggle
@@ -238,6 +239,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-peekaboo'
 Plug 'tpope/vim-surround'
+Plug 'nvim-neo-tree/neo-tree.nvim'
 Plug 'ms-jpq/chadtree'
 Plug 'tommcdo/vim-exchange'
 "Languages
@@ -288,6 +290,8 @@ Plug 'williamboman/nvim-lsp-installer'
 Plug 'tami5/lspsaga.nvim'
 Plug 'simrat39/symbols-outline.nvim'
 Plug 'liuchengxu/vista.vim'
+Plug 'folke/trouble.nvim'
+Plug 'https://git.sr.ht/~whynothugo/lsp_lines.nvim'
 "Close buffers
 Plug 'kazhala/close-buffers.nvim'
 Plug 'norcalli/nvim-colorizer.lua'
@@ -308,7 +312,7 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': 
 
 Plug 'inkarkat/vim-ReplaceWithRegister'
 
-" Plug 'MunifTanjim/nui.nvim'
+Plug 'MunifTanjim/nui.nvim'
 " Plug 'VonHeikemen/searchbox.nvim'
 
 "vim faker
@@ -521,7 +525,41 @@ nnoremap gp `[v`]
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
 lua << EOF
--- require 'trouble'.setup {}
+require("neo-tree").setup()
+vim.cmd([[nnoremap \ :NeoTreeFloat<cr>]])
+require 'trouble'.setup {}
+require("lsp_lines").register_lsp_virtual_lines()
+local saga = require 'lspsaga'
+saga.init_lsp_saga{
+ use_saga_diagnostic_sign = true,
+ error_sign = '☠',
+ warn_sign = '⚠',
+ hint_sign = '⎇',
+ infor_sign = '🛈',
+ diagnostic_header_icon = '   ',
+ code_action_icon = ' ',
+ code_action_prompt = {
+   enable = true,
+   sign = true,
+   sign_priority = 20,
+   virtual_text = true,
+ },
+ finder_definition_icon = '  ',
+ finder_reference_icon = '  ',
+ max_preview_lines = 10, -- preview lines of lsp_finder and definition preview
+ finder_action_keys = {
+   open = 'o', vsplit = 's',split = 'i',quit = 'q',scroll_down = '<C-f>', scroll_up = '<C-g>' -- quit can be a table
+   },
+ code_action_keys = {
+   quit = 'q',exec = '<CR>'
+   },
+ rename_action_keys = {
+   quit = '<C-c>',exec = '<CR>'  -- quit can be a table
+   },
+ definition_preview_icon = '  ',
+ border_style = "single",
+ rename_prompt_prefix = '➤',
+}
 
 require 'colorizer'.setup()
 require('nvim_comment').setup()
@@ -575,6 +613,8 @@ require("bufferline").setup{}
 
 local on_attach = function(client, bufnr)
   require'lsp_signature'.on_attach()
+  require'lspsaga'.on_attach()
+  require'nvim-cmp'.on_attach()
   local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
   local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 
@@ -653,19 +693,25 @@ require'lspconfig'.dartls.setup{
   capabilities = capabilities,
   cmd = { "dart", "/opt/dart-sdk/bin/snapshots/analysis_server.dart.snapshot", "--lsp" },
 }
+local pid = vim.fn.getpid()
 
+
+-- require'lspconfig'.csharp_ls.setup{}
+local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
 local lsp_installer = require("nvim-lsp-installer")
 lsp_installer.on_server_ready(function(server)
-    local opts = {}
+  local opts = {
+    capabilities = capabilities
+  }
 
-    -- (optional) Customize the options passed to the server
-    -- if server.name == "tsserver" then
-    --     opts.root_dir = function() ... end
-    -- end
+  -- (optional) Customize the options passed to the server
+  -- if server.name == "tsserver" then
+  --     opts.root_dir = function() ... end
+  -- end
 
-    -- This setup() function is exactly the same as lspconfig's setup function.
-    -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
-    server:setup(opts)
+  -- This setup() function is exactly the same as lspconfig's setup function.
+  -- Refer to https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
+  server:setup(opts)
 end)
 
 local t = function(str)
@@ -999,11 +1045,11 @@ require'hop'.setup {
 
   }
 
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-      vim.lsp.diagnostic.on_publish_diagnostics, {
-        update_in_insert = true,
-      }
-    )
+ vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+   vim.lsp.diagnostic.on_publish_diagnostics, {
+     update_in_insert = true,
+   }
+ )
 EOF
 
 let g:UltiSnipsExpandTrigger='<c-l>'
