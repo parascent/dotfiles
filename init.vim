@@ -118,8 +118,9 @@ nnoremap <expr> j (v:count > 5 ? "m'" . v:count : "") . 'j'
 
 "move to next desired location
 inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>\\|"\\|`\\|,' , 'cW')<cr><Right>
-imap ;; <Esc>A;
-imap ,, <Esc>A,
+imap ;; <Esc>A;<Esc>
+imap <C-=> <Esc>A =
+imap ,, <Esc>A,<Esc>
 imap ,jj <Esc>A,<Cr><Esc>j,
 imap ,kk <Esc>A,<Cr><Esc>k,
 imap ooo <Cr>,
@@ -252,7 +253,7 @@ Plug 'rebelot/kanagawa.nvim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'machakann/vim-highlightedyank'
 Plug 'hoob3rt/lualine.nvim'
-Plug 'airblade/vim-gitgutter'
+" Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-repeat'
 Plug 'ggandor/lightspeed.nvim'
 Plug 'godlygeek/tabular'
@@ -284,6 +285,7 @@ Plug 'tami5/sql.nvim'
 Plug 'nvim-telescope/telescope-frecency.nvim'
 Plug 'fhill2/telescope-ultisnips.nvim'
 Plug 'nvim-telescope/telescope-project.nvim'
+Plug 'lewis6991/gitsigns.nvim'
 " nvim lsp stuff
 Plug 'neovim/nvim-lspconfig'
 Plug 'williamboman/nvim-lsp-installer'
@@ -291,7 +293,6 @@ Plug 'tami5/lspsaga.nvim'
 Plug 'simrat39/symbols-outline.nvim'
 Plug 'liuchengxu/vista.vim'
 Plug 'folke/trouble.nvim'
-Plug 'https://git.sr.ht/~whynothugo/lsp_lines.nvim'
 "Close buffers
 Plug 'kazhala/close-buffers.nvim'
 Plug 'norcalli/nvim-colorizer.lua'
@@ -334,6 +335,10 @@ let g:autoload_last_session=v:false
 "lightspeed thingies
 nmap s <Plug>Lightspeed_s
 nmap S <Plug>Lightspeed_S
+nmap <expr> f reg_recording() . reg_executing() == "" ? "<Plug>Lightspeed_f" : "f"
+nmap <expr> F reg_recording() . reg_executing() == "" ? "<Plug>Lightspeed_F" : "F"
+nmap <expr> t reg_recording() . reg_executing() == "" ? "<Plug>Lightspeed_t" : "t"
+nmap <expr> T reg_recording() . reg_executing() == "" ? "<Plug>Lightspeed_T" : "T"
 "
 "Lsp saga stuff
 nnoremap <silent> gh :Lspsaga lsp_finder<CR>
@@ -350,6 +355,7 @@ nnoremap <silent> <leader>cd :Lspsaga show_line_diagnostics<CR>
 nnoremap <silent><leader>cc <cmd>lua require'lspsaga.diagnostic'.show_cursor_diagnostics()<CR>
 nnoremap <silent> [e :Lspsaga diagnostic_jump_next<CR>
 nnoremap <silent> ]e :Lspsaga diagnostic_jump_prev<CR>
+nnoremap <silent> <leader>cd :Lspsaga show_line_diagnostics<CR>
 "
 " supposed to make faster but is annoying
 " let g:cursorhold_updatetime = 2000
@@ -525,11 +531,26 @@ nnoremap gp `[v`]
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
 lua << EOF
-require("neo-tree").setup()
+require("neo-tree").setup({
+  filesystem = {
+    window = {
+      mappings = {
+        ["F"] = "filter_as_you_type",
+        ["/"] = "none",
+        ["w"] = "open",
+      }
+    }
+  },
+})
+require('gitsigns').setup()
 vim.cmd([[nnoremap \ :NeoTreeFloat<cr>]])
 require 'trouble'.setup {}
-require("lsp_lines").register_lsp_virtual_lines()
 local saga = require 'lspsaga'
+vim.diagnostic.config({
+  virtual_text = false,
+  signs = true,
+  float = {border = "single"},
+})
 saga.init_lsp_saga{
  use_saga_diagnostic_sign = true,
  error_sign = '☠',
@@ -602,7 +623,7 @@ require('telescope').setup {
 }
 vim.api.nvim_set_keymap(
     'n',
-    '<F1>',
+    'fp',
     ":lua require'telescope'.extensions.project.project{}<CR>",
     {noremap = true, silent = true}
 )
@@ -692,6 +713,7 @@ local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protoco
 require'lspconfig'.dartls.setup{
   capabilities = capabilities,
   cmd = { "dart", "/opt/dart-sdk/bin/snapshots/analysis_server.dart.snapshot", "--lsp" },
+  filetypes = { "dart" }
 }
 local pid = vim.fn.getpid()
 
@@ -778,6 +800,7 @@ map <leader>fs :Telescope ultisnips<CR>
 nmap <leader>fw :Telescope live_grep<CR>
 nmap <leader>fb :Telescope buffers<CR>
 nmap <leader>fr :Telescope frecency<CR>
+nmap <leader>fp :Telescope project<CR>
 " nmap <leader>fp :Files<CR>
 nmap <leader>ft :BTags<CR>
 " nmap <leader>fr :Tags<CR>
@@ -1045,11 +1068,11 @@ require'hop'.setup {
 
   }
 
- vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-   vim.lsp.diagnostic.on_publish_diagnostics, {
-     update_in_insert = true,
-   }
- )
+ -- vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+   -- vim.lsp.diagnostic.on_publish_diagnostics, {
+     -- update_in_insert = false,
+   -- }
+ -- )
 EOF
 
 let g:UltiSnipsExpandTrigger='<c-l>'
