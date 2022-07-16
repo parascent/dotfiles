@@ -43,6 +43,7 @@ if has('title') && (has('gui_running') || &title)
     set titlestring+=\ -\ %{substitute(getcwd(),\ $HOME,\ '~',\ '')}  " working directory
 endif
 
+set wildoptions+=pum
 set hlsearch
 set hidden
 set noerrorbells
@@ -85,7 +86,7 @@ set splitright
 
 " :nmap <leader>e :NERDTreeToggle<CR>
 " :nmap <leader>e :NvimTreeToggle<CR>
-nmap <leader>e :CHADopen<CR>
+" nmap <leader>e :CHADopen<CR>
 :nmap <space>r :registers<CR>
 :vmap <space>r :registers<CR>
 "Custom tabstops
@@ -112,18 +113,20 @@ inoremap . .<c-g>u
 inoremap ! !<c-g>u
 inoremap ? ?<c-g>u
 
+nnoremap <expr> <silent> 0 col('.') == match(getline('.'),'\S')+1 ? '0' : '^'
 "jumplist mutations
 nnoremap <expr> k (v:count > 5 ? "m'" . v:count : "") . 'k'
 nnoremap <expr> j (v:count > 5 ? "m'" . v:count : "") . 'j'
 
 "move to next desired location
-inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>\\|"\\|`\\|,' , 'cW')<cr><Right>
+inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>\\|"\\|`\\|,\\|''' , 'cW')<cr><Right>
 imap ;; <Esc>A;<Esc>
 imap <C-=> <Esc>A =
 imap ,, <Esc>A,<Esc>
 imap ,jj <Esc>A,<Cr><Esc>j,
 imap ,kk <Esc>A,<Cr><Esc>k,
 imap ooo <Cr>,
+imap :[] :[],
 " inoremap <silent> jj<c-o> getline('.')[col('.')-1] =~? '[]>)}]' || getline('.')[col('.')-1] =~? '[''"`]' && synIDattr(synID(line("."), col(".")+1, 1), "name") !~? 'string'
 "moving text
 vnoremap J :m '>+1<CR>gv=gv
@@ -164,11 +167,13 @@ function! DeleteInactiveBufs()
     echomsg nWipeouts . ' buffer(s) wiped out'
 endfunction
 command! Bdi :call DeleteInactiveBufs()
+command! GitFileHistory :Gclog -- %
 command! BufferCloseInactive :call DeleteInactiveBufs()
 
 "jump between errors
 nnoremap [l :lprev<CR>
 nnoremap ]l :lnext<CR>
+" nnoremap <leader>e :lnext<CR>
 
 "remap insert mode alt key and arrow keys
 inoremap <M-h> <Left>
@@ -227,6 +232,7 @@ set shortmess+=c
 
 call plug#begin('~/.config/nvim/plugged')
 
+Plug 'ktunprasert/gui-font-resize.nvim'
 Plug 'dkprice/vim-easygrep'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
@@ -241,7 +247,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-peekaboo'
 Plug 'tpope/vim-surround'
 Plug 'nvim-neo-tree/neo-tree.nvim'
-Plug 'ms-jpq/chadtree'
 Plug 'tommcdo/vim-exchange'
 "Languages
 Plug 'jiangmiao/auto-pairs'
@@ -249,6 +254,9 @@ Plug 'iloginow/vim-stylus'
 Plug 'terrortylor/nvim-comment'
 Plug 'rktjmp/lush.nvim'
 Plug 'ellisonleao/gruvbox.nvim'
+Plug 'NLKNguyen/papercolor-theme'
+Plug 'shaunsingh/solarized.nvim'
+
 Plug 'rebelot/kanagawa.nvim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'machakann/vim-highlightedyank'
@@ -261,7 +269,6 @@ Plug 'preservim/tagbar'
 " Plug 'Yggdroot/indentLine'
 Plug 'lukas-reineke/indent-blankline.nvim'
 Plug 'tpope/vim-abolish'
-Plug 'posva/vim-vue'
 Plug 'phaazon/hop.nvim'
 Plug 'vim-scripts/loremipsum'
 Plug 'wesQ3/vim-windowswap'
@@ -280,6 +287,7 @@ Plug 'SirVer/ultisnips'
 " Telescope things
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
+Plug 'akinsho/flutter-tools.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'tami5/sql.nvim'
 Plug 'nvim-telescope/telescope-frecency.nvim'
@@ -293,12 +301,14 @@ Plug 'tami5/lspsaga.nvim'
 Plug 'simrat39/symbols-outline.nvim'
 Plug 'liuchengxu/vista.vim'
 Plug 'folke/trouble.nvim'
+Plug 'ray-x/go.nvim'
+Plug 'ray-x/guihua.lua' "recommanded if need floating window support
 "Close buffers
 Plug 'kazhala/close-buffers.nvim'
 Plug 'norcalli/nvim-colorizer.lua'
 " Search and replace in multiple files
 Plug 'windwp/nvim-spectre'
-Plug 'vhyrro/neorg', { 'branch': 'unstable' } | Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-neorg/neorg' | Plug 'nvim-lua/plenary.nvim'
 Plug 'lukas-reineke/cmp-rg'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -308,6 +318,7 @@ Plug 'f3fora/cmp-spell'
 " Plugins for dbs
 Plug 'thibthib18/mongo-nvim'
 " Plug 'dbmrq/vim-dialect'
+Plug 'ziontee113/color-picker.nvim'
 " markdown preview
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 
@@ -355,6 +366,7 @@ nnoremap <silent> <leader>cd :Lspsaga show_line_diagnostics<CR>
 nnoremap <silent><leader>cc <cmd>lua require'lspsaga.diagnostic'.show_cursor_diagnostics()<CR>
 nnoremap <silent> [e :Lspsaga diagnostic_jump_next<CR>
 nnoremap <silent> ]e :Lspsaga diagnostic_jump_prev<CR>
+nnoremap <silent><leader>e :Lspsaga show_line_diagnostics<CR>
 nnoremap <silent> <leader>cd :Lspsaga show_line_diagnostics<CR>
 "
 " supposed to make faster but is annoying
@@ -472,6 +484,8 @@ nnoremap H ^
 vnoremap L $
 vnoremap H ^
 nnoremap Y y$
+nnoremap gH H
+nnoremap gL L
 
 " map to
 " nnoremap <silent> j gj
@@ -531,6 +545,25 @@ nnoremap gp `[v`]
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
 lua << EOF
+require("gui-font-resize").setup({ default_size = 10, change_by = 1, bounds = { maximum = 20 } })
+local fontsizeChangeOpts = { noremap = true, silent = true }
+vim.keymap.set("n", "<A-Up>", "<cmd>:GUIFontSizeUp<CR>", fontsizeChangeOpts)
+vim.keymap.set("n", "<A-Down>", "<cmd>:GUIFontSizeDown<CR>", fontsizeChangeOpts)
+vim.keymap.set("n", "<A-0>", "<cmd>:GUIFontSizeSet<CR>", fontsizeChangeOpts)
+
+
+require('go').setup()
+vim.api.nvim_exec([[ autocmd BufWritePre *.go :silent! lua require('go.format').goimport() ]], false)
+
+require("color-picker")
+local colorPickerOptions = { noremap = true, silent = true }
+vim.keymap.set("n", "<C-c>", "<cmd>PickColor<cr>", colorPickerOptions)
+
+require("flutter-tools").setup{
+  widget_guides = {
+    enabled = true,
+  },
+}
 require("neo-tree").setup({
   filesystem = {
     window = {
@@ -621,14 +654,11 @@ require('telescope').setup {
     },
   }
 }
-vim.api.nvim_set_keymap(
-    'n',
-    'fp',
-    ":lua require'telescope'.extensions.project.project{}<CR>",
-    {noremap = true, silent = true}
-)
 require('lualine').setup {
-  options = {theme = 'gruvbox'}
+  options = {
+    theme = 'gruvbox',
+    global_status = true,
+  }
 }
 require("bufferline").setup{}
 
@@ -690,6 +720,7 @@ cmp.setup({
   mapping = {
     ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
     ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<C-l>'] = cmp.mapping.confirm(),
     ['<Down>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
     ['<Up>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
@@ -773,21 +804,10 @@ vim.g.symbols_outline = {
     lsp_blacklist = {},
 }
 
-vim.g.chadtree_settings = {
-  theme = {
-    text_colour_set = "nerdtree_syntax_dark",
-    icon_colour_set = "github",
-  },
-  view ={
-    open_direction = "right"
-    }
-}
-
--- vim.api.nvim_set_var("chadtree_settings", chadtree_settings)
 
 EOF
 
-nmap <Leader>s :SymbolsOutline<CR>
+nmap <Leader>s :Telescope lsp_document_symbols<CR>
 
 " nmap <leader>b :Buffers<CR>
 nmap <C-b> :Buffers<CR>
@@ -796,6 +816,7 @@ nnoremap <Leader>fl :Telescope current_buffer_fuzzy_find<cr>
 " nmap <leader>fl :BLines<CR>
 " nmap <leader>ff :Ag<CR>
 map <leader>ff :Telescope find_files<CR>
+map <leader>fg :Bclose<CR>:Telescope find_files<CR>
 map <leader>fs :Telescope ultisnips<CR>
 nmap <leader>fw :Telescope live_grep<CR>
 nmap <leader>fb :Telescope buffers<CR>
@@ -976,6 +997,7 @@ function! s:Bclose(bang, buffer)
 endfunction
 command! -bang -complete=buffer -nargs=? Bclose call <SID>Bclose(<q-bang>, <q-args>)
 nnoremap <silent> <Leader>bd :Bclose<CR>
+nnoremap <silent> <Leader>qq :q!<CR>
 
 "Tabularize
 autocmd VimEnter * :AddTabularPattern object /^.\{-}:/l0
@@ -1018,13 +1040,13 @@ local parser_configs = require('nvim-treesitter.parsers').get_parser_configs()
  --}
 
 
-parser_configs.norg = {
-  install_info = {
-      url = "https://github.com/vhyrro/tree-sitter-norg",
-      files = { "src/parser.c", "src/scanner.cc" },
-      branch = "main"
-  },
-}
+-- parser_configs.norg = {
+  -- install_info = {
+      -- url = "https://github.com/vhyrro/tree-sitter-norg",
+      -- files = { "src/parser.c", "src/scanner.cc" },
+      -- branch = "main"
+  -- },
+-- }
 
 require'nvim-treesitter.configs'.setup {
   highlight = {
@@ -1056,7 +1078,8 @@ require'neorg'.setup {
     ["core.norg.dirman"] = { -- Manage your directories with Neorg
       config = {
         workspaces = {
-          my_workspace = "~/neorg"
+          office = "~/notes/office",
+          private = "~/notes/private",
         }
       }
     }
@@ -1066,20 +1089,16 @@ require'neorg'.setup {
 
 require'hop'.setup {
 
-  }
+}
 
  -- vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
    -- vim.lsp.diagnostic.on_publish_diagnostics, {
      -- update_in_insert = false,
    -- }
  -- )
+
 EOF
 
-let g:UltiSnipsExpandTrigger='<c-l>'
-" shortcut to go to next position
-let g:UltiSnipsJumpForwardTrigger='<c-j>'
-" shortcut to go to previous position
-let g:UltiSnipsJumpBackwardTrigger='<c-k>'
 
 if exists('g:neoman')
   set guifont=Delugia:h9
@@ -1114,3 +1133,10 @@ if exists('g:fvim_loaded')
     FVimCursorSmoothMove v:true
     FVimCursorSmoothBlink v:true
 endif
+
+
+let g:UltiSnipsExpandTrigger='<c-l>'
+" shortcut to go to next position
+let g:UltiSnipsJumpForwardTrigger='<c-j>'
+" shortcut to go to previous position
+let g:UltiSnipsJumpBackwardTrigger='<c-k>'
