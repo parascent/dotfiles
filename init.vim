@@ -261,6 +261,7 @@ Plug 'rebelot/kanagawa.nvim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'machakann/vim-highlightedyank'
 Plug 'hoob3rt/lualine.nvim'
+" Plug 'ldelossa/buffertag'
 " Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-repeat'
 Plug 'ggandor/lightspeed.nvim'
@@ -545,6 +546,7 @@ nnoremap gp `[v`]
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
 lua << EOF
+-- require('buffertag').enable()
 require("gui-font-resize").setup({ default_size = 10, change_by = 1, bounds = { maximum = 20 } })
 local fontsizeChangeOpts = { noremap = true, silent = true }
 vim.keymap.set("n", "<A-Up>", "<cmd>:GUIFontSizeUp<CR>", fontsizeChangeOpts)
@@ -657,8 +659,35 @@ require('telescope').setup {
 require('lualine').setup {
   options = {
     theme = 'gruvbox',
-    global_status = true,
-  }
+    globalstatus = false,
+  },
+  sections = {
+  lualine_a = {'mode'},
+  lualine_b = {'branch', 'diff', 'diagnostics'},
+  lualine_c = {
+    {
+    'filename',
+    path = 1
+      }
+  },
+  lualine_x = {'encoding', 'fileformat', 'filetype'},
+  lualine_y = {'progress'},
+  lualine_z = {'location'}
+  },
+inactive_sections = {
+  lualine_a = {},
+  lualine_b = {},
+  lualine_c = {
+    {
+
+    'filename',
+    path = 1
+      }
+  },
+  lualine_x = {'location'},
+  lualine_y = {},
+  lualine_z = {}
+  },
 }
 require("bufferline").setup{}
 
