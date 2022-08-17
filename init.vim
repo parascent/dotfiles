@@ -49,6 +49,7 @@ set hidden
 set noerrorbells
 set tabstop=2 softtabstop=2
 set shiftwidth=2
+autocmd FileType norg setlocal shiftwidth=4 softtabstop=4 expandtab
 set expandtab
 set smartindent
 set autoindent
@@ -256,7 +257,8 @@ Plug 'rktjmp/lush.nvim'
 Plug 'ellisonleao/gruvbox.nvim'
 Plug 'NLKNguyen/papercolor-theme'
 Plug 'shaunsingh/solarized.nvim'
-
+Plug 'kdheepak/monochrome.nvim'
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 Plug 'rebelot/kanagawa.nvim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'machakann/vim-highlightedyank'
@@ -283,7 +285,10 @@ Plug 'szw/vim-maximizer'
 Plug 'eliba2/vim-node-inspect'
 Plug 'kyazdani42/nvim-web-devicons'
 "UltiSnips
-Plug 'SirVer/ultisnips'
+Plug 'L3MON4D3/LuaSnip'
+Plug 'saadparwaiz1/cmp_luasnip'
+" Plug 'rafamadriz/friendly-snippets'
+" Plug 'SirVer/ultisnips'
 " Plug 'honza/vim-snippets'
 " Telescope things
 Plug 'nvim-lua/popup.nvim'
@@ -292,7 +297,7 @@ Plug 'akinsho/flutter-tools.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'tami5/sql.nvim'
 Plug 'nvim-telescope/telescope-frecency.nvim'
-Plug 'fhill2/telescope-ultisnips.nvim'
+" Plug 'fhill2/telescope-ultisnips.nvim'
 Plug 'nvim-telescope/telescope-project.nvim'
 Plug 'lewis6991/gitsigns.nvim'
 " nvim lsp stuff
@@ -314,7 +319,7 @@ Plug 'lukas-reineke/cmp-rg'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/nvim-cmp'
-Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+" Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 Plug 'f3fora/cmp-spell'
 " Plugins for dbs
 Plug 'thibthib18/mongo-nvim'
@@ -524,10 +529,24 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " Set completeopt to have a better completion experience
 set completeopt=menuone,noinsert,noselect
-let g:completion_enable_snippet = 'UltiSnips'
+" let g:completion_enable_snippet = 'UltiSnips'
 let g:completion_matching_strategy_list = ['exact', 'substring', 'fuzzy']
 "#endregion completion
 "
+"LuaSnip
+"" press <Tab> to expand or jump in a snippet. These can also be mapped separately
+" via <Plug>luasnip-expand-snippet and <Plug>luasnip-jump-next.
+imap <silent><expr> <C-l> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-l>'
+" -1 for jumping backwards.
+inoremap <silent> <C-h> <cmd>lua require'luasnip'.jump(-1)<Cr>
+
+snoremap <silent> <C-l> <cmd>lua require('luasnip').jump(1)<Cr>
+snoremap <silent> <C-h> <cmd>lua require('luasnip').jump(-1)<Cr>
+" For changing choices in choiceNodes (not strictly necessary for a basic setup).
+imap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
+smap <silent><expr> <C-E> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-E>'
+command! LuaSnipEdit :lua require("luasnip.loaders").edit_snippet_files()
+"LuaSnip
 " List available databases
 nnoremap <leader>dbl <cmd>lua require('mongo-nvim.telescope.pickers').database_picker()<cr>
 " List collections in database (arg: database name)
@@ -545,14 +564,62 @@ nnoremap gp `[v`]
 
 " inoremap <silent><expr> <CR>      compe#confirm('<C-l>')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 lua << EOF
+local luasnip = require("luasnip")
+require("luasnip.loaders.from_lua").lazy_load({paths = "~/snippets/lua/"})
+
+-- require("luasnip.loaders.from_vscode").lazy_load()
 -- require('buffertag').enable()
+
 require("gui-font-resize").setup({ default_size = 10, change_by = 1, bounds = { maximum = 20 } })
 local fontsizeChangeOpts = { noremap = true, silent = true }
 vim.keymap.set("n", "<A-Up>", "<cmd>:GUIFontSizeUp<CR>", fontsizeChangeOpts)
 vim.keymap.set("n", "<A-Down>", "<cmd>:GUIFontSizeDown<CR>", fontsizeChangeOpts)
 vim.keymap.set("n", "<A-0>", "<cmd>:GUIFontSizeSet<CR>", fontsizeChangeOpts)
 
+require("bufferline").setup{}
 
 require('go').setup()
 vim.api.nvim_exec([[ autocmd BufWritePre *.go :silent! lua require('go.format').goimport() ]], false)
@@ -626,7 +693,7 @@ require 'mongo-nvim'.setup {
   list_document_key = "title"
 }
 require"telescope".load_extension("frecency")
-require('telescope').load_extension('ultisnips')
+-- require('telescope').load_extension('ultisnips')
 require'telescope'.load_extension('project')
 --require('telescope').load_extension('session_manager')
 require('telescope').setup {
@@ -636,7 +703,7 @@ require('telescope').setup {
     layout_strategy = "vertical",
     layout_config = {
       vertical = {
-        preview_height = 50,
+        preview_height = 0.7,
       },
     },
     extensions = {
@@ -689,7 +756,6 @@ inactive_sections = {
   lualine_z = {}
   },
 }
-require("bufferline").setup{}
 
 local on_attach = function(client, bufnr)
   require'lsp_signature'.on_attach()
@@ -734,16 +800,21 @@ local nvim_lsp = require('lspconfig')
 local pid = vim.fn.getpid()
 vim.o.completeopt = "menuone,noselect"
 
-require"cmp_nvim_ultisnips".setup {
-  show_snippets = "all",
-}
+-- require"cmp_nvim_ultisnips".setup {
+  -- show_snippets = "all",
+-- }
 
 local cmp = require'cmp'
+
+local has_words_before = function()
+  local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+  return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+end
 
 cmp.setup({
   snippet = {
     expand = function(args)
-      vim.fn["UltiSnips#Anon"](args.body)
+      luasnip.lsp_expand(args.body)
     end,
   },
   mapping = {
@@ -760,8 +831,8 @@ cmp.setup({
   },
   sources = {
     { name = 'nvim_lsp' },
-    { name = 'ultisnips' },
     { name = 'buffer' },
+    { name = 'luasnip' },
     { name = 'rg' },
     --{ name = 'spell' },
   }
@@ -846,7 +917,6 @@ nnoremap <Leader>fl :Telescope current_buffer_fuzzy_find<cr>
 " nmap <leader>ff :Ag<CR>
 map <leader>ff :Telescope find_files<CR>
 map <leader>fg :Bclose<CR>:Telescope find_files<CR>
-map <leader>fs :Telescope ultisnips<CR>
 nmap <leader>fw :Telescope live_grep<CR>
 nmap <leader>fb :Telescope buffers<CR>
 nmap <leader>fr :Telescope frecency<CR>
@@ -1162,10 +1232,3 @@ if exists('g:fvim_loaded')
     FVimCursorSmoothMove v:true
     FVimCursorSmoothBlink v:true
 endif
-
-
-let g:UltiSnipsExpandTrigger='<c-l>'
-" shortcut to go to next position
-let g:UltiSnipsJumpForwardTrigger='<c-j>'
-" shortcut to go to previous position
-let g:UltiSnipsJumpBackwardTrigger='<c-k>'
