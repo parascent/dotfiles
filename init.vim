@@ -85,6 +85,9 @@ set spelloptions=camel
 set splitbelow
 set splitright
 
+autocmd BufNewFile,BufRead *.cshtml set filetype=cshtml
+autocmd FileType cshtml setlocal shiftwidth=4 softtabstop=4 expandtab
+
 " :nmap <leader>e :NERDTreeToggle<CR>
 " :nmap <leader>e :NvimTreeToggle<CR>
 " nmap <leader>e :CHADopen<CR>
@@ -124,6 +127,7 @@ inoremap <silent> jj <c-o>:call search('}\\|)\\|]\\|>\\|"\\|`\\|,\\|''' , 'cW')<
 imap ;; <Esc>A;<Esc>
 imap <C-=> <Esc>A =
 imap ,, <Esc>A,<Esc>
+imap ,l ,<space>
 imap ,jj <Esc>A,<Cr><Esc>j,
 imap ,kk <Esc>A,<Cr><Esc>k,
 imap ooo <Cr>,
@@ -233,6 +237,7 @@ set shortmess+=c
 
 call plug#begin('~/.config/nvim/plugged')
 
+Plug 'Pocco81/true-zen.nvim'
 Plug 'ktunprasert/gui-font-resize.nvim'
 Plug 'dkprice/vim-easygrep'
 Plug 'tpope/vim-fugitive'
@@ -240,6 +245,7 @@ Plug 'tpope/vim-unimpaired'
 Plug 'kdheepak/lazygit.nvim'
 Plug 'vim-utils/vim-man'
 Plug 'mbbill/undotree'
+Plug 'windwp/nvim-ts-autotag'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/playground'
 Plug 'ThePrimeagen/refactoring.nvim'
@@ -607,6 +613,12 @@ nnoremap gp `[v`]
 
 
 lua << EOF
+require'hop'.setup { }
+require("true-zen").setup {
+		-- your config goes here
+		-- or just leave it empty :)
+}
+require('nvim-ts-autotag').setup()
 local luasnip = require("luasnip")
 require("luasnip.loaders.from_lua").lazy_load({paths = "~/snippets/lua/"})
 
@@ -838,7 +850,7 @@ cmp.setup({
   }
 })
 
-local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
 
 require'lspconfig'.dartls.setup{
@@ -850,7 +862,7 @@ local pid = vim.fn.getpid()
 
 
 -- require'lspconfig'.csharp_ls.setup{}
-local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 local lsp_installer = require("nvim-lsp-installer")
 lsp_installer.on_server_ready(function(server)
   local opts = {
@@ -1168,6 +1180,8 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 
+local ft_to_parser = require"nvim-treesitter.parsers".filetype_to_parsername
+ft_to_parser.cshtml = "html"
 --Neorg
 require'neorg'.setup {
   -- Tell Neorg what modules to load
@@ -1186,9 +1200,6 @@ require'neorg'.setup {
 }
 --print('Hello from lua')
 
-require'hop'.setup {
-
-}
 
  -- vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
    -- vim.lsp.diagnostic.on_publish_diagnostics, {
