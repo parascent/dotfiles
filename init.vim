@@ -54,7 +54,6 @@ set expandtab
 set smartindent
 set autoindent
 set nu
-set nowrap
 set ignorecase
 set smartcase
 set noswapfile
@@ -70,7 +69,6 @@ set foldmethod=indent
 set nofoldenable
 set wrap
 set linebreak
-set breakat=,^I
 set autoread
 set inccommand=split
 set mousefocus
@@ -248,6 +246,7 @@ Plug 'mbbill/undotree'
 Plug 'windwp/nvim-ts-autotag'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/playground'
+Plug 'Wansmer/treesj'
 Plug 'ThePrimeagen/refactoring.nvim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -314,13 +313,13 @@ Plug 'simrat39/symbols-outline.nvim'
 Plug 'liuchengxu/vista.vim'
 Plug 'folke/trouble.nvim'
 Plug 'ray-x/go.nvim'
-Plug 'ray-x/guihua.lua' "recommanded if need floating window support
+Plug 'ray-x/guihua.lua', {'do': 'cd lua/fzy && make' }
+Plug 'ray-x/navigator.lua'
 "Close buffers
 Plug 'kazhala/close-buffers.nvim'
 Plug 'norcalli/nvim-colorizer.lua'
 " Search and replace in multiple files
 Plug 'windwp/nvim-spectre'
-Plug 'nvim-neorg/neorg' | Plug 'nvim-lua/plenary.nvim'
 Plug 'lukas-reineke/cmp-rg'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -613,6 +612,9 @@ nnoremap gp `[v`]
 
 
 lua << EOF
+require('treesj').setup({
+  max_join_length = 500,
+})
 require'hop'.setup { }
 require("true-zen").setup {
 		-- your config goes here
@@ -933,6 +935,8 @@ nmap <leader>fw :Telescope live_grep<CR>
 nmap <leader>fb :Telescope buffers<CR>
 nmap <leader>fr :Telescope frecency<CR>
 nmap <leader>fp :Telescope project<CR>
+nmap <leader>fe :Telescope diagnostics bufnr=0<CR>
+nmap <leader>fE :Telescope diagnostics<CR>
 " nmap <leader>fp :Files<CR>
 nmap <leader>ft :BTags<CR>
 " nmap <leader>fr :Tags<CR>
@@ -1182,22 +1186,6 @@ require'nvim-treesitter.configs'.setup {
 
 local ft_to_parser = require"nvim-treesitter.parsers".filetype_to_parsername
 ft_to_parser.cshtml = "html"
---Neorg
-require'neorg'.setup {
-  -- Tell Neorg what modules to load
-  load = {
-    ["core.defaults"] = {}, -- Load all the default modules
-    ["core.norg.concealer"] = {}, -- Allows for use of icons
-    ["core.norg.dirman"] = { -- Manage your directories with Neorg
-      config = {
-        workspaces = {
-          office = "~/notes/office",
-          private = "~/notes/private",
-        }
-      }
-    }
-  },
-}
 --print('Hello from lua')
 
 
@@ -1242,4 +1230,13 @@ if exists('g:fvim_loaded')
     nnoremap <A-CR> :FVimToggleFullScreen<CR>
     FVimCursorSmoothMove v:true
     FVimCursorSmoothBlink v:true
+endif
+
+
+if exists('g:neoray')
+  set guifont=Delugia:h9.5
+  NeoraySet CursorAnimTime 0.05
+  NeoraySet Transparency   1
+  NeoraySet KeyZoomIn      <C-ScrollWheelUp>
+  NeoraySet KeyZoomOut     <C-ScrollWheelDown>
 endif
